@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="spacer">
+  </div>
+  <form name="theform" autocomplete="off" action="/bm25" method="post">
+    <h1>This is the BM25 algorithm.</h1>
+    <h4>Which language and feature are you interested in?</h4>
+    <div class="center2">
+      <div class="autocomplete">
+        <input onKeyup="checkform()" id="feature_input" type="text" name="feature" placeholder="Feature">
+      </div>
+      <div class="autocomplete">
+        <input onKeyup="checkform()" id="language_input" type="text" name="language" placeholder="Language">
+      </div>
+      <input id="submitbutton" type="submit" disabled="disabled" name="Extract" value="Extract">
+    </div>
+  </form>
+    
+  <div class="small-spacer">
+  </div>
+
+  <script>
+    function autocomplete(inp, arr) {
+      var currentFocus;
+      inp.addEventListener("input", function(e) {
+          var a, b, i, val = this.value;
+          closeAllLists();
+          if (!val) { return false;}
+          currentFocus = -1;
+          a = document.createElement("DIV");
+          a.setAttribute("id", this.id + "autocomplete-list");
+          a.setAttribute("class", "autocomplete-items");
+          this.parentNode.appendChild(a);
+          for (i = 0; i < arr.length; i++) {
+            if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+              b = document.createElement("DIV");
+              b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+              b.innerHTML += arr[i].substr(val.length);
+              b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+              b.addEventListener("click", function(e) {
+                  inp.value = this.getElementsByTagName("input")[0].value;
+                  closeAllLists();
+              });
+              a.appendChild(b);
+            }
+          }
+      });
+      inp.addEventListener("keydown", function(e) {
+          var x = document.getElementById(this.id + "autocomplete-list");
+          if (x) x = x.getElementsByTagName("div");
+          if (e.keyCode == 40) {
+            currentFocus++;
+            addActive(x);
+          } else if (e.keyCode == 38) {
+            currentFocus--;
+            addActive(x);
+          } else if (e.keyCode == 13) {
+            e.preventDefault();
+            if (currentFocus > -1) {
+              if (x) x[currentFocus].click();
+            }
+          }
+      });
+      function addActive(x) {
+        if (!x) return false;
+        removeActive(x);
+        if (currentFocus >= x.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = (x.length - 1);
+        x[currentFocus].classList.add("autocomplete-active");
+      }
+      function removeActive(x) {
+        for (var i = 0; i < x.length; i++) {
+          x[i].classList.remove("autocomplete-active");
+        }
+      }
+      function closeAllLists(elmnt) {
+
+        var x = document.getElementsByClassName("autocomplete-items");
+        for (var i = 0; i < x.length; i++) {
+          if (elmnt != x[i] && elmnt != inp) {
+            x[i].parentNode.removeChild(x[i]);
+          }
+        }
+      }
+
+      document.addEventListener("click", function (e) {
+          closeAllLists(e.target);
+          checkform();
+      });
+    }
+    
+    var features = ['Reduplication', 'Plural', 'Singular', 'Declension', 'Nominative case', 'Ergative case', 'Absolutive case', 'Accusative case', ];
+
+
+    var languages = ['Massachusett', 'Ingrian', 'Mikasuki', 'Opata', 'Kamasau', 'Wichi', 'Tommo So', 'Siona', 'Tai', 'Apurinã', 'Tobelo', 'Delaware', 'Algonquin', 'Ese', 'Kunama', 'Inner Mongolian', 'Apatani', 'Guajajara', 'Kayan Lahta', 'Darma', 'Assiniboine', 'Wa', 'Andoque', 'Bororo', "O'odham", 'Cabécar', 'Nanga', 'Shuswap', 'Cubeo', 'Rikbaktsa', 'North', 'Iñapari', 'Trio', 'Asmat', 'Tshangla', 'Red Karen', 'Dəməna', 'Bobangi', 'Tamil', 'Iu', 'Nuu-chah-nulth', 'Maba', 'Amuesha', 'Bare', 'Pitjantjatjara', 'Dolgan', 'Navajo-English', 'Nahuatl', 'Maidu', 'Munichi', 'Tehuelche', 'Orkhon', 'Zulu', 'Dime', 'Waris', 'Hkongso', 'Mauwake', 'Tiriyó', 'Newārī', 'Jemez', 'Diegueño', 'Chiwere', 'Wappo', 'Tunica', 'Kri', 'Mapuche', 'Akuntsú', 'Cupeño', 'Manchu', 'Chuvash', 'Puinave', 'Uyghur', 'Nuxalk', 'Catawba', 'Gumuz', 'Achumawi', 'Japanese', 'Hungarian', 'Kui', 'Poyanáwa', 'Mutsun', 'Washkuk', 'Betta', 'Yugh', 'Tehit', 'Lavukaleve', 'Mohegan', 'Yimas', 'Karìì', 'Kolami', 'Paresi-Haliti', 'Timbe', 'Canela', 'Nankina', 'Quileute', 'Koryak', 'Kadiwéu', 'Selkup', 'Arara', 'Choctaw', 'Blackfoot', 'Ayoreo', 'Konkow', 'Tswana', 'Wiyot', 'Panamint', 'Urubú', 'Meroitic', 'Betoi', 'Bargam', 'Desano', 'Murle', 'Yaminahua', 'Khmer', 'Parintintin', 'Achuar', 'Akwáwa', 'Monguor', 'Nalca', 'Tamang', 'Songish', 'Bondum Dom Dogon', 'Aguaruna', 'Dagur', 'Ostyak', 'Shǐxīng', 'Quechan', 'Taos', 'Kitanemuk', 'Luwo', 'Nyamang', 'Mekens', 'Bunaq', 'Shor', 'Cree', 'Girawa', 'Nyaheun', 'Nii', 'Han', 'Karitiana', 'Hup', 'Miwok', 'Bru Khok Sa-at', 'Baure', "Yup'ik", 'Canela-Krahô', 'Tatar', "Kwak'wala", 'Kusunda', 'Dakota', 'Lisu', 'Dogul Dom', 'Moghol', 'Jarawa', 'Aweti', 'Sanuma', 'Guaraní', 'Binandere', 'Passamaquoddy-Maliseet', 'Etruscan', 'Caquinte', 'Witoto', 'Bonan', 'Manipuri', 'Para Naga', 'Motuna', 'Carib', 'Abau', 'Iatmul', 'Nenets', 'Piscataway', 'Omagua', 'Abenaki', 'Tewa', 'Hurrian', 'Bangime', 'Maricopa', 'Sotho', 'Huarijío', 'Yucuna', 'Chinese', 'Urartian', 'Ho', 'Timbira', 'Tucano', 'Sanio', 'Finnish', 'Votic', 'Havasupai', 'Macushi', 'Proto-Mongolic', 'Ofo', 'Okinawan', 'Jegün', 'Nevome', 'Golin', 'Serrano', 'Daai', 'Urama', 'Shipibo-conibo', 'Tepehuan', 'Mianmin', 'Malayalam', 'Imonda', 'Nambikwara', 'Proto-Boro-Garo', 'Arapaho', 'Tübatulabal', 'Situ', 'Bafaw', 'Guarani', 'Agarabi', 'Mari', 'Hupa', 'Creek', 'Maasai', 'Berik', 'Luo', 'Cherokee', 'Kalapuya', 'Lao', 'Estonian', 'Chrau', 'Azerbaijani', 'Elamite', 'Makalero', 'Cholón', 'Enets', 'Guanano', 'Natchez', 'Ambulas', 'Comox', 'Jamsay', 'Kiwai', 'Mizo', 'Tuki', 'Daga', 'Guhu Samane', 'Usarufa', 'Teribe', 'Mara', 'Mundari', 'Dâw', 'Khakas', 'Nung', 'Gagauz', 'Kanamari', 'Djeoromitxi', 'Caddo', 'Yaqui', 'Wanano', 'Veps', 'Tapirapé', 'American', 'Mocovi', 'Italian', 'Cora', 'Lango', 'Kayah', 'Apalachee', 'Ghulfan', 'Sentani', 'Tolowa', 'Katukina-Pano', 'Lingala', 'Even', 'Yuracaré', 'Potawatomi', 'Kven', 'Kayardild', 'Salinan', 'Pirahã', 'Turkana', 'Dhimal', 'Kunming Chinese', 'Kansa', 'Apache', 'Tutelo', 'Coeur', 'Magar', 'Chemehuevi', 'Páez', 'Kaiwá', 'Bai', 'Turkish', 'Yanda Dom Dogon', 'Névome', 'Kayapó', 'Mosuo', 'Nicobarese', 'Shwe Palaung', 'Udihe', 'Rawa', 'Karelian', 'Okanagan', 'Komi', 'Mandan', 'Shawã', 'Karo', 'Kalmyk', 'Karajá', 'Mian', 'Yupik', 'Coast Tsimshian', 'Ticuna', 'Taushiro', 'Ket', 'Siuslawan', 'Udmurt', 'Fuyug', 'Eastern Yugur', 'Orejón', 'Tibetan', 'Koyukon', 'Itelmen', 'Lahu', 'Koasati', 'Aymara', 'Pacoh', 'Tol', 'Apinayé', 'Brahui', 'Khamnigan', 'Atikamekw', 'Juang', 'Livonian', 'Kikongo', 'Kikuyu', 'Kazakh', 'Aleut', 'Vitu', 'Limbu', 'Micmac', 'Yokuts', 'Wichita', 'Turkmen', 'Tiwa', 'Movima', 'Abkhaz', 'Cashibo', 'Crimean', 'Élamite', 'Dom', 'Waorani', 'Yahgan', 'Shan', 'Luiseño', "S'gaw Karen", 'Cora-Sprache', 'Kamano', 'Hidatsa', 'Klamath', 'Nez', 'Bora', 'Mandarin', 'Mansi', 'Yagua', 'Lakota', 'Mongolian', 'Andamanese ', 'Savosavo', 'Arikara', 'Naukan', 'Malto', 'Ordos', 'Orokaiva', 'Dakota-Sprache', 'Xhosa', 'Cabecar', 'Iyo', 'Jingpho', 'Nottoway', 'Bilua', 'Tirmaga', 'Bondo', 'Itene', 'Nubian', 'Pilagá', 'Hanga', 'Australian', 'Koho', 'Kaugel', 'Silozi', 'Telugu', 'Onondaga', 'Araweté', 'Alutor', 'Cheyenne', 'Semai', 'Haida', 'Biloxi', 'Kanite', 'Byangsi', 'Shasta', 'Winnebago', 'Fox', 'Secoya', 'Molala', 'Barupu', 'Siuslaw', 'Dinka', 'Saami', 'Kaska', 'Chipewyan', 'Mosetén', 'Sumerian', 'Xibe', 'Spokane', 'Lawa', 'Nheengatú', 'Japhug', 'Denaina', 'Xavante', 'Wambon', 'Iñupiaq', "Nisga'a", 'Urim', 'Bantawa', 'Khasi', 'Cashinahua', 'Camling', 'Tujia', 'Apalai', 'Pochutec', 'Oneida', 'Nimboran', 'Ika', 'Guajá', 'Eton', 'Buryat', 'Ryukyuan', 'Zuni', 'Atakapa', 'Wintu', 'Chimariko', 'Gitksan', 'Washo', 'Huichol', 'Ioway-Otoe', 'Burmese', 'Yurok', 'Ugaritic', 'Paresi', 'Temiar', "Bao'an", 'Wyandot', 'Kalispel', 'Palaic', 'Hmong', 'Awa', 'Dar Daju Daju', 'Shawnee', 'Karamojong', 'Beaver', 'Kirghiz', 'Uzbek', 'Tlingit', 'Tadaksahak', 'Jordanian', 'Kosena', 'Mator', 'Santa', 'Sapuan', 'Nganasan', 'Sarcee', 'Proto-Wintun', 'Tupi', 'Salar', 'Cavineña', 'Canaano-Akkadian', 'Kickapoo', 'Sheko', 'Notu-Ewage', 'Irabu', 'Bashkir', 'Alabama', 'Pedi', 'Halkomelem', 'Ute', 'Dzubukuá', 'Chukchi', 'Cahto', 'Axininca', 'Seneca', 'Greenlandic', 'Dogon', 'Guajiro', 'Comanche', 'Columbia-Moses', 'Thulung', 'Tarahumara', 'Sirenik', 'Kott', 'Timucua', 'Ona', 'Cocama', 'Kurukh', 'Mono', 'Blang', 'Wayana', 'Tulu', 'Ioway-Oto', 'Matsés', 'Mountain', 'Nhanda', 'Waimiri', 'British', 'Orok', 'Maquiritari', 'Seri', 'Zarma', 'Kurtöp', 'Thai', 'Doromu-Koki', 'Naxi', 'Moksha', 'Ashéninca', 'Santali', 'Nipmuck', 'Oksapmin', 'Mochica', 'Kanuri', 'Persian', 'Montagnais', 'Carian', 'Luwian', 'Awapit', 'Kannada', 'Kogi', 'Kanoê', 'Proto-Omagua-Kokama', 'Inga Kichwa', 'Taiwan', 'Hopi', 'Yanam', 'Bisu', 'Awtuw', 'Nuosu', 'Wapishana', 'Amahuaca', 'Naskapi', 'Karachay', 'Menya', 'Basque', 'Inuktitut', 'Coos', 'Palikur', 'Guahibo', 'Muhiang', 'Northern', 'Acoma', 'Lopit', 'Crow', 'Kiowa', 'Mbundu', 'Warembori', 'Rabha', 'Kuna', 'Laguna', 'Ngambay', 'Middle', 'Balti', 'Bininj Kun-Wok', 'Fang', 'Akkadian', 'Mamaindê', 'Guìqióng', 'Moskona', 'Kharia', 'Tanacross', 'Korean', 'Galice', 'Shantou', 'Yuchi', 'Narragansett', 'Manambu', 'Karbi', 'Rotokas', 'Udege', 'Dagik', 'Sedang', 'Karaim', 'Takelma', 'Ōgami', 'Ottoman-Turkish', 'Upper', 'Barasano', 'Catio', 'Kayabi', 'Thompson', 'Bumthang', 'Pipil', ' Menggwa Dla', 'Cocopa', 'Komba', 'Kơho-Sre', 'Suena', 'Indo-Pakistani', 'Kasua', 'Teiwa', 'Sahaptin', 'Western Yugur', 'Toro Tegu Dogon', 'Kunuz Nibian', 'Gros', 'Evenki', 'Daza', 'Pima', 'Highland Popoluca', 'Negidal', 'Panobo', 'Cantonese', 'Baoan', 'Koyra', 'Teso', 'Tahltan', 'Edolo', 'Lepcha', 'Guaymí', 'Tonkawa', 'Avá-Canoeiro', 'Tapiete', 'Lembena', 'Ottoman', 'Gaahmg', 'Fasu', 'Karam', 'Swazi', 'Abui', 'Shimaore', 'Khmu', 'Shupamem', 'Ik', 'Vietnamese', "Gwich'in", 'Kiranti-Bayung', 'Konai', 'Kwama', 'Yakut', 'Yana', 'Tuscarora', 'Mohawk', 'Nivacle', 'Cuiva', 'Ojibwe', 'Dani', 'Nivkh', 'Qiang', 'Pomo', 'Bari', 'Kham', 'Punu', 'Yuki', 'Quechua', 'Jarawara', 'Chagatay', 'Garo', 'Dandami Maria', 'Lushootseed', 'Mongsen', 'Paumarí', 'Altay', 'Kutenai', 'Yukaghir', 'Mbugwe', 'Piro', 'Munduruku', 'Mon', 'Nanai', 'Ainu', 'Geba', 'Plang', 'Sunwar', 'Eyak', 'Koreguaje', 'Päri', 'Hattic', 'Kamas', 'Tuvan', 'Siberian', 'Hittite', 'Stoney', 'Shatt', 'Atong', 'Omaha-Ponca', 'Nitinaht', 'Turkic', "Ts'ets'aut", 'Muinane', 'Chumash', 'Navajo', 'Epena Pedee', 'Galo', 'Arawak', 'Swiss', 'Hualapai', 'Koi', 'Yessan-Mayo', 'Chichewa', 'Chemakum', 'Adamorobe', 'Onge', 'Khitan', 'Kwaza', 'Chinook', 'Resígaro', 'Assurini', "Ka'apor", 'Ternate', 'Coahuilteco', 'Skou', 'Nheengatu', 'Guayabero', 'Sabanê', 'Manange', 'Biangai', 'Achagua', 'Chitimacha', 'Ersu', 'Khanty', 'Saanich', 'Sherpa'];
+    
+    function checkform()
+    {
+        var feat = document.forms["theform"].elements["feature"];
+        var lang = document.forms["theform"].elements["language"];
+        var submit = (features.includes(feat.value) && languages.includes(lang.value));
+        document.getElementById('submitbutton').disabled = !submit;
+    }
+
+    /*инициируйте функцию автозаполнения на элементе "мой вход" и передайте по массиву стран как можно больше значений автозаполнения:*/
+    autocomplete(document.getElementById("feature_input"), features);
+    autocomplete(document.getElementById("language_input"), languages);
+
+    
+
+  </script>
+{% endblock %}
