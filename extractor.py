@@ -130,7 +130,7 @@ class Extractor:
     def extract_image(self, pdf_file, i, nums):
         
         image_names = []
-        output_fname = "linguistic_data_extraction/static/output.pdf"
+        output_fname = "static/output.pdf"
         pdf_writer = PyPDF2.PdfFileWriter()
 
         for num in nums:
@@ -144,7 +144,7 @@ class Extractor:
         for image in images:
             image_name = "output" + str(i) + ".jpg"
             image_names.append(image_name)
-            image.save("linguistic_data_extraction/static/" + image_name, 'JPEG')
+            image.save("static/" + image_name, 'JPEG')
             i += 1
         return image_names, i
 
