@@ -7,7 +7,7 @@
     {% for index in indices %}
       <p><strong>{{fname_indices[index][0]}}<br>Result №{{fname_indices[index][1]}}.</strong><br><br>{{res[index]}}</p>
         {% for fname in image_files[index] %}
-          <img class="center" src="{{url_for('static', filename=fname)}}">
+          <img class="center" src="static/image/{{fname}}">
         {% endfor %}
     {% endfor %}
   </div>

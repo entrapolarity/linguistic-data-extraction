@@ -22,18 +22,18 @@ class Extractor:
     def __init__(self):
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-        self.df = pd.read_excel("data/grammars.xlsx")
+        self.df = pd.read_excel("linguistic_data_extraction/data/grammars.xlsx")
         self.lang_list = ["ca", "zh", "en", "fr", "de", "it", "pt", "ru", "es"]
         self.models = dict()
         self.stopwords = dict()
         self.embedder = SentenceTransformer('bert-base-multilingual-cased')
 
-        modelPath = "data/multilingual_cased"
+        modelPath = "linguistic_data_extraction/data/multilingual_cased"
 
         self.embedder.save(modelPath)
         self.embedder = SentenceTransformer(modelPath)
 
-        with open("data/language_files.json", 'r') as file:
+        with open("linguistic_data_extraction/data/language_files.json", 'r') as file:
             self.language_files = json.load(file)
 
         for lang in self.lang_list:
@@ -43,7 +43,7 @@ class Extractor:
                 model_name = lang + "_core_web_sm"
             else:
                 model_name = lang + "_core_news_sm"
-                    
+
             self.models[lang] = spacy.load(model_name, disable=['parser', 'ner'])
 
     def get_lang(self, filename):
@@ -56,7 +56,7 @@ class Extractor:
         if m is not None:
             return s[m.start()]
         return "A"
-    
+
     def end_of_sentence(self, text):
         text = text.strip("\n ")
         stop = ('...', '.', '?', '!', '!!!', '…')
@@ -78,7 +78,7 @@ class Extractor:
         # get languages
         soup = BeautifulSoup(urlopen('http://en.wikipedia.org/wiki/' + (term[:1].upper() + term[1:]).replace(' ', '_')), features="lxml")
         interwikihead = soup.find('li', class_=('interlanguage-link interwiki-' + language + ' mw-list-item'))
-        
+
         try:
             title = re.split(' \(| –', interwikihead.a.get('title'))[0]
             return title.lower()
@@ -88,7 +88,7 @@ class Extractor:
     def get_description(self, term, language):
         soup = BeautifulSoup(urlopen('http://en.wikipedia.org/wiki/' + (term[:1].upper() + term[1:]).replace(' ', '_')), features="lxml")
         interwikihead = soup.find('li', class_=('interlanguage-link interwiki-' + language + ' mw-list-item'))
-        
+
         try:
             if language == "en":
                 title = term[:1].upper() + term[1:]
@@ -118,9 +118,9 @@ class Extractor:
                     new_paragraphs.append(paragraphs[i])
                     new_page_numbers[paragraphs[i]] = [page_numbers[i]]
         return new_paragraphs, new_page_numbers
-    
+
     def make_dir(self, fname):
-        
+
         directory = os.path.dirname(fname)
         if not os.path.exists(directory):
             os.system("mkdir -p \"{directory}\"")
@@ -128,9 +128,9 @@ class Extractor:
 
 
     def extract_image(self, pdf_file, i, nums):
-        
+
         image_names = []
-        output_fname = "static/output.pdf"
+        output_fname = "linguistic_data_extraction/static/image/output.pdf"
         pdf_writer = PyPDF2.PdfFileWriter()
 
         for num in nums:
@@ -144,12 +144,12 @@ class Extractor:
         for image in images:
             image_name = "output" + str(i) + ".jpg"
             image_names.append(image_name)
-            image.save("static/" + image_name, 'JPEG')
+            image.save("linguistic_data_extraction/static/image/" + image_name, 'JPEG')
             i += 1
         return image_names, i
 
     def rerank(self, query, entries, embeddings_dict):
-        
+
         corpus_embeddings = self.embedder.encode(entries)
 
         query_embedding = self.embedder.encode(query)
@@ -165,7 +165,7 @@ class Extractor:
 
         for idx, distance in results[0:closest_n]:
             ans.append(entries[idx])
-            
+
         return ans
 
 
@@ -178,24 +178,24 @@ class Extractor:
             i = 0
             filenames = self.language_files[lang_about]
             for item in filenames:
-        
+
                 fname = item[0]
                 short_name = fname
 
                 lang = item[1]
-                absolute_path = "data/"
+                absolute_path = "linguistic_data_extraction/data/"
                 fname = absolute_path + fname
                 fname_par = (absolute_path + "Grammars_Paragraphs/" + os.path.basename(fname)).replace("pdf", "json")
                 fname_lem = (absolute_path + "Grammars_Lemmas/" + os.path.basename(fname)).replace("pdf", "json")
                 fname_num = (absolute_path + "Grammars_Page_Numbers/" + os.path.basename(fname)).replace("pdf", "json")
-                
+
 
                 nlp = self.models[lang]
                 stopwords_lang = self.stopwords[lang]
 
                 if not os.path.exists(fname_par):
 
-                    command = "rclone copy \"gdrive:" + short_name + "\" \"data/" + os.path.dirname(short_name) + "\" --no-traverse --drive-chunk-size 32M -P"
+                    command = "rclone copy \"gdrive:" + short_name + "\" \"linguistic_data_extraction/data/" + os.path.dirname(short_name) + "\" --no-traverse --drive-chunk-size 32M -P"
                     os.system(command)
                     print(command)
 
@@ -210,7 +210,7 @@ class Extractor:
                         for paragraph in addition:
                             page_numbers.append(j)
                     new_paragraphs, new_page_numbers = self.get_new_paragraphs(paragraphs, page_numbers)
-                    
+
                     for paragraph in new_paragraphs:
                         lemmatized_paragraph = []
                         doc = nlp(paragraph.lower())
@@ -218,7 +218,7 @@ class Extractor:
                             if token.lemma_ not in stopwords_lang and token.is_alpha:
                                 lemmatized_paragraph.append(token.lemma_)
                         lemmatized_paragraphs.append(lemmatized_paragraph)
-                    
+
                     self.make_dir(fname_lem)
                     self.make_dir(fname_par)
                     self.make_dir(fname_num)
@@ -246,8 +246,8 @@ class Extractor:
 
                 if description:
                     term = self.get_term(query, lang)
-                    fname_desc = "data/Grammars_Descriptions/" + term + ".json"
-                    fname_desc_lem = "data/Grammars_Descriptions/" + term + "_lemmatized.json"
+                    fname_desc = "linguistic_data_extraction/data/Grammars_Descriptions/" + term + ".json"
+                    fname_desc_lem = "linguistic_data_extraction/data/Grammars_Descriptions/" + term + "_lemmatized.json"
 
                     if not os.path.exists(fname_desc):
                         desc = self.get_description(query, lang)
@@ -273,7 +273,7 @@ class Extractor:
                             desc = json.load(file)
                         with open(fname_desc_lem, 'r') as file:
                             lemmatized_desc = json.load(file)
-                    
+
                     query_translated = lemmatized_desc
 
                 else:
@@ -289,25 +289,25 @@ class Extractor:
                 if method == "BM25":
                     ans += top_n
                     for item in top_n:
-                    
+
                         num = new_page_numbers[item]
                         image_names, i = self.extract_image(pdf_file, i, num)
                         image_files.append(image_names)
-                
+
                 else:
                     reranked = self.rerank(query_translated, top_n, dict())
                     ans += reranked
-                
+
                     for item in reranked:
-                    
+
                         num = new_page_numbers[item]
                         image_names, i = self.extract_image(pdf_file, i, num)
                         image_files.append(image_names)
-                
+
                 fnames.append(short_name)
-            
+
             fname_indices = []
-                    
+
             for fname in fnames:
                 for k in range(5):
                     fname_indices.append([fname, k + 1]) 
